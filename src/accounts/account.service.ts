@@ -5,6 +5,7 @@ import { UpdateAccountDto } from './dto/update-account.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { AccountEntity } from './entities/account.entity';
 import { ResponseData } from '../common/global';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AccountService {
@@ -14,14 +15,28 @@ export class AccountService {
     createAccountDto: CreateAccountDto,
   ): Promise<ResponseData<AccountEntity>> {
     try {
-      const existingAccount = await this.accountRepository.findByEmail(
+      // Check if email already exists
+      const existingEmail = await this.accountRepository.findByEmail(
         createAccountDto.email,
       );
-      if (existingAccount) {
+      if (existingEmail) {
         return {
           statusCode: 409,
           message: 'Email đã tồn tại',
           error: 'Duplicate email',
+          data: [],
+        };
+      }
+
+      // Check if codeID already exists
+      const existingCodeID = await this.accountRepository.getAccountByCodeID(
+        createAccountDto.codeID,
+      );
+      if (existingCodeID) {
+        return {
+          statusCode: 409,
+          message: 'Mã ID đã tồn tại',
+          error: 'Duplicate codeID',
           data: [],
         };
       }
@@ -47,9 +62,7 @@ export class AccountService {
   async getAllAccounts(): Promise<ResponseData<AccountEntity[]>> {
     try {
       const accounts = await this.accountRepository.getAllAccounts();
-      // Don't return passwords in response
       const accountsWithoutPasswords = accounts.map((account) => {
-        //const { password, ...accountData } = account;
         return account;
       });
 
@@ -84,8 +97,6 @@ export class AccountService {
         };
       }
 
-      // Don't return password in response
-      //const { password, ...accountData } = account;
       return {
         statusCode: 200,
         message: 'Account retrieved successfully',
@@ -120,9 +131,6 @@ export class AccountService {
           data: [],
         };
       }
-
-      // Don't return password in response
-      //const { password, ...accountData } = account;
       return {
         statusCode: 200,
         message: 'Account updated successfully',
@@ -197,6 +205,41 @@ export class AccountService {
       return {
         statusCode: 400,
         message: 'Failed to change password',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        data: [false],
+      };
+    }
+  }
+
+  async resetPassword(
+    codeID: string,
+    resetPasswordDto: ResetPasswordDto,
+  ): Promise<ResponseData<boolean>> {
+    try {
+      const result = await this.accountRepository.resetPassword(
+        codeID,
+        resetPasswordDto,
+      );
+
+      if (!result) {
+        return {
+          statusCode: 404,
+          message: 'Account not found',
+          error: 'No account found with the given codeID',
+          data: [false],
+        };
+      }
+
+      return {
+        statusCode: 200,
+        message: 'Password reset successfully',
+        error: null,
+        data: [true],
+      };
+    } catch (error) {
+      return {
+        statusCode: 400,
+        message: 'Failed to reset password',
         error: error instanceof Error ? error.message : 'Unknown error',
         data: [false],
       };

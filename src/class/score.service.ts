@@ -2,30 +2,40 @@ import { Injectable } from '@nestjs/common';
 import { ScoreRepository } from './repositories/score.repository';
 import { ClassScoreDto } from './dto/score.dto';
 import { ResponseData } from '../common/global';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ClassEntity } from './entities/class.entity';
 
 @Injectable()
 export class ScoreService {
-  constructor(private readonly scoreRepository: ScoreRepository) {}
+  constructor(
+    private readonly scoreRepository: ScoreRepository,
+    @InjectRepository(ClassEntity)
+    private readonly classRepository: Repository<ClassEntity>,
+  ) {}
 
   async getScoresByClassId(
     classId: number,
   ): Promise<ResponseData<ClassScoreDto>> {
     try {
-      const scores = await this.scoreRepository.getScoresByClassId(classId);
+      const classEntity = await this.classRepository.findOne({
+        where: { classId },
+      });
 
-      if (!scores.length) {
+      if (!classEntity) {
         return {
           statusCode: 404,
-          message: 'No scores found for this class',
+          message: 'Class not found',
           error: null,
           data: null,
         };
       }
 
-      // Transform to the required format
+      const scores = await this.scoreRepository.getScoresByClassId(classId);
+
       const classScore: ClassScoreDto = {
         classId: classId,
-        className: scores[0].class.className,
+        className: classEntity.className,
         score: scores.map((score) => ({
           studentId: score.student.codeID,
           fullName: score.student.fullName,
@@ -40,7 +50,9 @@ export class ScoreService {
 
       return {
         statusCode: 200,
-        message: 'Scores retrieved successfully',
+        message: scores.length
+          ? 'Scores retrieved successfully'
+          : 'No scores found for this class yet',
         error: null,
         data: classScore,
       };
@@ -60,7 +72,6 @@ export class ScoreService {
     try {
       const scores = await this.scoreRepository.saveClassScores(classScoreDto);
 
-      // Transform back to the required format
       const updatedClassScore: ClassScoreDto = {
         classId: classScoreDto.classId,
         className: classScoreDto.className,

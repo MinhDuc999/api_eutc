@@ -30,7 +30,6 @@ export class SubmissionEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  // Relationships
   @ManyToOne(() => TestEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'testId' })
   test: TestEntity;

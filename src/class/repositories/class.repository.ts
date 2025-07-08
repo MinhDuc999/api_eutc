@@ -1,4 +1,4 @@
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, DeleteResult } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ClassEntity } from '../entities/class.entity';
 import { ClassDto } from '../dto/class.dto';
@@ -147,13 +147,40 @@ export class ClassRepository extends Repository<ClassEntity> {
       classEntity.students = students.filter((student) => student !== null);
     }
 
-    // Handle files updates separately
+    // Handle files updates
+    if (classDto.files && classDto.files.length > 0) {
+      const fileRepository = this.dataSource.getRepository(ClassFileEntity);
+      for (const fileDto of classDto.files) {
+        if (!fileDto.id) {
+          const newFile = new ClassFileEntity();
+          newFile.name = fileDto.name || '';
+          newFile.url = fileDto.url || '';
+          newFile.class = classEntity;
+          await fileRepository.save(newFile);
+        }
+      }
+      classEntity.files = await fileRepository.find({
+        where: { class: { classId } },
+        relations: ['class'],
+      });
+    }
 
     return await this.save(classEntity);
   }
 
-  async deleteClass(classId: number): Promise<boolean> {
-    const result = await this.delete(classId);
-    return result.affected ? result.affected > 0 : false;
+  async deleteClass(classId: number): Promise<DeleteResult> {
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('class_files')
+      .where('classId = :classId', { classId })
+      .execute();
+
+    return await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('classes')
+      .where('classId = :classId', { classId })
+      .execute();
   }
 }

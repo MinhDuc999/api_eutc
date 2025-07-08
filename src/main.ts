@@ -8,10 +8,8 @@ async function bootstrap() {
   try {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-    // Thiết lập CORS
     app.enableCors();
 
-    // Thiêt lập validation pipes
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -19,7 +17,6 @@ async function bootstrap() {
       }),
     );
 
-    // Cấu hình để phục vụ file tĩnh
     app.useStaticAssets(join(__dirname, '..', 'uploads'), {
       prefix: '/uploads/',
     });

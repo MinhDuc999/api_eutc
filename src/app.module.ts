@@ -27,6 +27,7 @@ import { ClassModule } from './class/class.module';
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
         autoLoadEntities: true,
+        timezone: '+07:00',
       }),
       inject: [ConfigService],
     }),

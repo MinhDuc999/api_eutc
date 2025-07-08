@@ -20,29 +20,33 @@ export class UpfilesController {
       storage: diskStorage({
         destination: './upfiles',
         filename: (req, file, callback) => {
+          const originalName = file.originalname.replace(
+            extname(file.originalname),
+            '',
+          );
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
-          const filename = `${uniqueSuffix}${ext}`;
+          const filename = `${originalName}-${uniqueSuffix}${ext}`;
           callback(null, filename);
         },
       }),
       fileFilter: (req, file, callback) => {
-        // Chấp nhận các loại file văn phòng
         const allowedMimeTypes = [
-          'application/msword', // .doc
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-          'application/vnd.ms-excel', // .xls
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-          'application/vnd.ms-powerpoint', // .ppt
-          'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
-          'application/pdf', // .pdf
-          'text/plain', // .txt
-          'application/vnd.oasis.opendocument.text', // .odt
-          'application/vnd.oasis.opendocument.spreadsheet', // .ods
-          'application/vnd.oasis.opendocument.presentation', // .odp
-          'application/zip', // .zip
-          'application/x-rar-compressed', // .rar
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.ms-powerpoint',
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+          'application/pdf',
+          'text/plain',
+          'application/vnd.oasis.opendocument.text',
+          'application/vnd.oasis.opendocument.spreadsheet',
+          'application/vnd.oasis.opendocument.presentation',
+          'application/zip',
+          'application/x-rar-compressed',
+          'application/octet-stream',
         ];
 
         if (allowedMimeTypes.includes(file.mimetype)) {
@@ -52,7 +56,7 @@ export class UpfilesController {
         }
       },
       limits: {
-        fileSize: 1024 * 1024 * 10, // Giới hạn 10MB
+        fileSize: 1024 * 1024 * 50,
       },
     }),
   )

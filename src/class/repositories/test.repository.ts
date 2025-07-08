@@ -84,9 +84,17 @@ export class TestRepository extends Repository<TestEntity> {
   }
 
   async deleteTest(testId: number): Promise<boolean> {
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('test_submissions')
+      .where('testId = :testId', { testId })
+      .execute();
+
     const result = await this.delete(testId);
     return result.affected ? result.affected > 0 : false;
   }
+
   async getAllSubmissionsByTestId(
     testId: number,
   ): Promise<TestSubmissionEntity[]> {

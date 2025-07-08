@@ -17,13 +17,12 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { AccountType } from './dto/create-account.dto';
-//import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
-  // Public registration endpoint (no auth required)
   @Post()
   async createAccount(
     @Body(ValidationPipe) createAccountDto: CreateAccountDto,
@@ -31,10 +30,8 @@ export class AccountController {
     return this.accountService.createAccount(createAccountDto);
   }
 
-  // Protected routes - require authentication
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(AccountType.ADMIN)
   async getAllAccounts() {
     return this.accountService.getAllAccounts();
   }
@@ -68,5 +65,15 @@ export class AccountController {
     @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
   ) {
     return this.accountService.changePassword(codeID, changePasswordDto);
+  }
+
+  @Post(':codeID/resetPassword')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(AccountType.ADMIN)
+  async resetPassword(
+    @Param('codeID') codeID: string,
+    @Body(ValidationPipe) resetPasswordDto: ResetPasswordDto,
+  ) {
+    return this.accountService.resetPassword(codeID, resetPasswordDto);
   }
 }

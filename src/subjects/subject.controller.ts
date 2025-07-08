@@ -21,7 +21,6 @@ import { AccountType } from '../accounts/dto/create-account.dto';
 export class SubjectController {
   constructor(private subjectService: SubjectService) {}
 
-  // Only Admin and Teacher can create subjects
   @Post()
   @UseGuards(RolesGuard)
   @Roles(AccountType.ADMIN, AccountType.TEACHER)
@@ -29,19 +28,16 @@ export class SubjectController {
     return this.subjectService.createSubject(subjectDto);
   }
 
-  // All authenticated users can view subjects
   @Get()
   async getAllSubjects() {
     return this.subjectService.getAllSubjects();
   }
 
-  // All authenticated users can view subject details
   @Get(':id')
   async getSubjectById(@Param('id', ParseIntPipe) id: number) {
     return this.subjectService.getSubjectById(id);
   }
 
-  // Only Admin and Teacher can update subjects
   @Put(':id')
   @UseGuards(RolesGuard)
   @Roles(AccountType.ADMIN, AccountType.TEACHER)
@@ -52,7 +48,6 @@ export class SubjectController {
     return this.subjectService.updateSubject(id, subjectDto);
   }
 
-  // Only Admin can delete subjects
   @Delete(':id')
   @UseGuards(RolesGuard)
   @Roles(AccountType.ADMIN)

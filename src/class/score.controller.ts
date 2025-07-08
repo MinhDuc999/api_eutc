@@ -20,13 +20,11 @@ import { AccountType } from '../accounts/dto/create-account.dto';
 export class ScoreController {
   constructor(private scoreService: ScoreService) {}
 
-  // Get scores for a class
   @Get()
   async getScoresByClassId(@Param('classId', ParseIntPipe) classId: number) {
     return this.scoreService.getScoresByClassId(classId);
   }
 
-  // Only Admin and Teacher can submit scores
   @Post()
   @UseGuards(RolesGuard)
   @Roles(AccountType.ADMIN, AccountType.TEACHER)
@@ -34,12 +32,10 @@ export class ScoreController {
     @Param('classId', ParseIntPipe) classId: number,
     @Body() classScoreDto: ClassScoreDto,
   ) {
-    // Ensure the classId in path matches the one in body
     classScoreDto.classId = classId;
     return this.scoreService.saveClassScores(classScoreDto);
   }
 
-  // Only Admin and Teacher can update scores
   @Put()
   @UseGuards(RolesGuard)
   @Roles(AccountType.ADMIN, AccountType.TEACHER)
@@ -47,7 +43,6 @@ export class ScoreController {
     @Param('classId', ParseIntPipe) classId: number,
     @Body() classScoreDto: ClassScoreDto,
   ) {
-    // Ensure the classId in path matches the one in body
     classScoreDto.classId = classId;
     return this.scoreService.saveClassScores(classScoreDto);
   }

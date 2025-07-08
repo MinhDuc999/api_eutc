@@ -13,7 +13,7 @@ export class NotificationEntity {
   @Column()
   title: string;
 
-  @Column()
+  @Column({ type: 'text' })
   content: string;
 
   @CreateDateColumn({ type: 'timestamp' })

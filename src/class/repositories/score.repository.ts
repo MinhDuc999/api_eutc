@@ -47,7 +47,7 @@ export class ScoreRepository extends Repository<ScoreEntity> {
         });
 
         if (!student) {
-          continue; // Skip if student not found
+          continue;
         }
 
         scoreEntity = new ScoreEntity();
@@ -55,16 +55,20 @@ export class ScoreRepository extends Repository<ScoreEntity> {
         scoreEntity.student = student;
       }
 
-      // Update score values
-      scoreEntity.qt = studentScore.qt ?? 0;
-      scoreEntity.th = studentScore.th ?? 0;
+      if (studentScore.qt !== undefined) {
+        scoreEntity.qt = studentScore.qt;
+      }
 
-      // Calculate tk (average) and tt (status)
-      if (studentScore.qt !== undefined && studentScore.th !== undefined) {
-        scoreEntity.tk = Number(
-          ((studentScore.qt + studentScore.th) / 2).toFixed(1),
-        );
-        scoreEntity.tt = scoreEntity.tk >= 5 ? 'Đạt' : 'Không đạt';
+      if (studentScore.th !== undefined) {
+        scoreEntity.th = studentScore.th;
+      }
+
+      if (studentScore.tk !== undefined) {
+        scoreEntity.tk = studentScore.tk;
+      }
+
+      if (studentScore.tt !== undefined) {
+        scoreEntity.tt = studentScore.tt;
       }
 
       const savedScore = await this.save(scoreEntity);
